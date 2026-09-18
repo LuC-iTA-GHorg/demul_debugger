@@ -2,6 +2,9 @@
 
 Native, high-performance in-process guest debugger, disassembler, profiler, and reverse engineering toolkit for the **Demul v0.7 (Build 251220)** emulator, written in **Zig** and Win32.
 
+> [!WARNING]
+> **Demul Version Compatibility**: This debugger was developed and verified **EXCLUSIVELY for Demul v0.7 (Build 251220 / `demul_251220`)**. Any other build or version of Demul is untested and may crash or fail to function due to static memory offset targets and hook addresses.
+
 ---
 
 ## Supported Systems & Platforms
@@ -37,21 +40,25 @@ Native, high-performance in-process guest debugger, disassembler, profiler, and 
 
 ## Shortcuts & Controls
 
-| Shortcut / Button | Function |
-| :--- | :--- |
-| **Ctrl + D** | Show / Hide Main Disassembler Window |
-| **Ctrl + W** | Open Branch Watcher & Dynamic Flow Profiler |
-| **Ctrl + M** | Open Real-Time Memory Viewer & Hex Editor |
-| **Ctrl + K** | Open Dedicated Stack Viewer |
-| **Ctrl + S** | Open Real-Time Memory Scanner |
-| **Ctrl + B** | Open Breakpoint, Watchpoint & Memory Freeze Manager |
-| **Ctrl + T** | Open Instruction Trace Logger |
-| **Ctrl + H** | Open SH-4 Converter Scratchpad (ASM $\leftrightarrow$ HEX) |
-| **Ctrl + G** | Jump Disassembler to Guest Address |
-| **F2** | Toggle Execution Breakpoint on selected instruction / address |
-| **F5** | Pause Emulation |
-| **F9** | Resume Emulation |
-| **F7** | Step Into (Single SH-4 Opcode) |
-| **F8** | Step Over (Subroutine Call) |
-| **F6** | Step Out (Return from Subroutine) |
-| **Space** | Toggle Recording in Trace Logger or Branch Watcher |
+| Category | Shortcut / Button | Function |
+| :--- | :--- | :--- |
+| **Window Toggles** | **Ctrl + D** | Show / Hide Main Disassembler Window |
+| | **Ctrl + W** | Open Branch Watcher & Dynamic Flow Profiler |
+| | **Ctrl + M** | Open Real-Time Memory Viewer & Hex Editor |
+| | **Ctrl + K** | Open Dedicated Stack Viewer |
+| | **Ctrl + S** | Open Real-Time Memory Scanner |
+| | **Ctrl + B** | Open Breakpoint, Watchpoint & Memory Freeze Manager |
+| | **Ctrl + T** | Open Instruction Trace Logger |
+| | **Ctrl + H** | Open SH-4 Converter Scratchpad (ASM $\leftrightarrow$ HEX) |
+| **Execution Controls** | **Ctrl + G** | Jump Disassembler to Guest Address |
+| | **F2** | Toggle Execution Breakpoint on selected instruction / address |
+| | **F5** | Pause Emulation |
+| | **F9** | Resume Emulation |
+| | **F7** | Step Into (Single SH-4 Opcode) |
+| | **F8** | Step Over (Subroutine Call) |
+| | **F6** | Step Out (Return from Subroutine) |
+| **Window Actions & Navigation** | **Space** | Toggle Recording in Trace Logger or Branch Watcher |
+| | **Up / Down** | Line-by-line selection & scrolling in Disassembler, Memory Viewer & Trace Logger |
+| | **PageUp / PageDown** | Page-by-page scrolling in Disassembler & Trace Logger |
+| | **Home / End** | Jump to newest / oldest entry in Trace Logger |
+| | **Enter / Esc** | Confirm input in address jump boxes & dialogs / Close dialogs |
