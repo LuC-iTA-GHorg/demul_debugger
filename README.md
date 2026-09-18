@@ -67,3 +67,35 @@ Native, high-performance in-process guest debugger, disassembler, profiler, and 
 | | **PageUp / PageDown** | Page-by-page scrolling in Disassembler & Trace Logger |
 | | **Home / End** | Jump to newest / oldest entry in Trace Logger |
 | | **Enter / Esc** | Confirm input in address jump boxes & dialogs / Close dialogs |
+
+---
+
+## Antivirus / SmartScreen False Positives
+
+If Windows Defender, another antivirus, or VirusTotal flags `demul_debugger.exe` or
+`debugger_core.dll` as a trojan, "hack tool", "riskware", or similar — **this is expected, and it is
+a false positive.** No malicious code has ever been present in this repository. This section
+explains exactly why the detection happens, what actually reduces it, and what does not.
+
+### Why antivirus engines flag this project
+
+Antivirus heuristics do not read intent, they read **behaviour**. And the behaviour this project
+needs in order to work is, byte for byte, the same behaviour a game trainer, a cheat engine, or a
+process injector uses:
+
+- `demul_debugger.exe` calls `VirtualAllocEx` + `WriteProcessMemory` + `CreateRemoteThread` on
+  `LoadLibraryA` to load `debugger_core.dll` into Demul's process. This exact API sequence is the
+  textbook signature of DLL injection, and it is what every injection-detection heuristic looks for.
+- `debugger_core.dll`, once loaded, installs inline hooks on Demul's interpreter dispatch loops via
+  `VirtualProtect(PAGE_EXECUTE_READWRITE)`, patches live instruction bytes in the guest's emulated
+  RAM, and registers a Vectored Exception Handler.
+- It also programs the x86 hardware debug registers (`DR0..DR3`) directly — the same mechanism used
+  by hardware breakpoints in a debugger and by anti-debug bypass tools alike.
+
+Every one of these is necessary for a native, zero-overhead, in-process SH-4 debugger to exist at
+all — there is no way to hook an interpreter loop, patch live game code, or set a hardware
+watchpoint without doing exactly these things. The heuristics are not wrong about what the code
+does; they simply cannot distinguish "debugger for a game emulator" from "cheat injector for a
+game" or "trojan targeting a game process", because from the outside those three tools are
+indistinguishable at the API-call level. **A 100% clean scan on every engine is not a realistic
+goal** for a tool built this way, on any codebase, in any language.
