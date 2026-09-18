@@ -5,6 +5,9 @@ Native, high-performance in-process guest debugger, disassembler, profiler, and 
 > [!WARNING]
 > **Demul Version Compatibility**: This debugger was developed and verified **EXCLUSIVELY for Demul v0.7 (Build 251220 / `demul_251220`)**. Any other build or version of Demul is untested and may crash or fail to function due to static memory offset targets and hook addresses.
 
+> [!CAUTION]
+> **Antivirus / SmartScreen False Positives**: The compiled binaries in this repository are very likely to be flagged by Windows Defender, other antivirus engines, or VirusTotal as a trojan, "game hacking tool", or generic malware. **This is a false positive**, but an expected one — read [why this happens and what to do about it](#antivirus--smartscreen-false-positives) before reporting it as a bug or assuming the repository has been compromised.
+
 ---
 
 ## Supported Systems & Platforms
@@ -21,12 +24,12 @@ Native, high-performance in-process guest debugger, disassembler, profiler, and 
 
 ## Key Features
 
-- **SH-4 Disassembler & Assembler**: Complete Hitachi SH-4 decoding with branch visual arrows, target labels (`; loc_...`, `; sub_...`), literal pool preview (`; = 0x...`), Gutter markers, and in-place assembly.
+- **SH-4 Disassembler & Assembler**: Complete, fully symmetric Hitachi SH-4 encoding and decoding - every instruction the disassembler prints is accepted back by the assembler (zero unsupported encodings across the whole 65,536-opcode space), including `fmov.s` indirect forms, `fmac`, the GBR-relative byte logicals, banked registers and the vector FPU instructions. Verified opcode-by-opcode across the full 65,536-encoding space by round-trip and by differential comparison against an independent reference decoder (see `BUG_AUDIT_REPORT.md`), with branch visual arrows, target labels (`; loc_...`, `; sub_...`), literal pool preview (`; = 0x...`), Gutter markers, and in-place assembly.
 - **Branch Watcher & Flow Profiler (`Ctrl+W`)**: Real-time branch execution profiler supporting 8,192 unique branch sites and 16,384 hash slots. Displays preceding condition instruction (`PC - 2`), supports "Cond Only" filtering, idle noise calibration, event isolation, in-place condition inversion (`BT` $\leftrightarrow$ `BF`), force jump, NOP, and log export.
 - **Single-Cycle Bitwise Opcode Hook**: Matches conditional branches in 1 CPU cycle inside the interpreter step hook (`0x00511EB0`).
 - **Instruction Trace Logger (`Ctrl+T`)**: 2048-entry circular ring buffer recording PC, opcode, PR, R0, R15, and SR with zero heap allocations.
 - **In-Process Resilient RAM Writing**: Directly modifies guest code and variables via `VirtualProtect(PAGE_EXECUTE_READWRITE)`, preventing write failures in Win32 WOW64 environments.
-- **Hardware Memory Watchpoints (`DR0`..`DR3`)**: Zero-latency hardware watchpoints powered by x86 CPU debug registers and Vectored Exception Handling.
+- **Hardware Memory Watchpoints (`DR0`..`DR3`)**: Zero-latency hardware watchpoints powered by x86 CPU debug registers and Vectored Exception Handling. Addresses are masked against the live RAM size (8 / 16 / 32 MB), and misaligned watchpoints are rejected up front because the debug registers would never fire for them.
 - **Memory Freeze / Value Locker**: Real-time thread-safe memory lock engine for 1B, 2B, 4B, and 32-bit Float values running on a 1ms monitor loop.
 - **RAM Search Engine (`Ctrl+S`)**: Multi-type memory scanner (Exact, Changed, Unchanged, Increased, Decreased, Between) with alignment filtering.
 - **Memory Viewer & Hex Editor (`Ctrl+M`)**: Dynamic full-viewport hex dump with instant jumps to RAM, VRAM, ARAM, and BIOS.
@@ -34,7 +37,9 @@ Native, high-performance in-process guest debugger, disassembler, profiler, and 
 - **SH-4 Converter Scratchpad (`Ctrl+H`)**: Two-panel bidirectional ASM $\leftrightarrow$ HEX converter with automatic literal pool resolution.
 - **Direct Disc Extraction (`1ST_READ.BIN`)**: Traverses mounted GDI/CDI images and ISO9660 directory structures, with automatic 2MB tile Sega descrambling into `dumps/1ST_READ_DESCRAMBLED.BIN`.
 - **Dynamic UI Control Lock & Cold-Start Alignment**: Tracks Demul emulation lifecycle via `GetExitCodeThread`. Displays *"Emulation Inactive"* banners across all windows on cold start, clearing automatically via live timer invalidation on game start. Detects Dynarec vs. Interpreter (`0x0A4859C8`) on-the-fly across all platforms, locking execution hooks while keeping Memory Freeze active.
-- **Minimal Binary Footprint**: Core DLL is optimized at **~406 KB** and Launcher at **~397 KB** (strictly under the 600 KB limit) through `.bss` buffer paging and `-O ReleaseSmall -fstrip`.
+- **Fully Relocatable Installation**: No absolute path is compiled into the binaries. Simply place `demul_debugger.exe` and `debugger_core.dll` in the same folder as `demul.exe` - any folder, any drive, including removable media. The launcher refuses to start if `demul.exe` is not adjacent, and still validates that it is exactly Demul v0.7 Build 251220 before injecting.
+- **Audited Correctness, Zero Known Defects**: The September 2026 source audit found and closed 17 defects. Across the full 65,536-opcode space the disassembler and assembler are exactly symmetric - 0 unsupported encodings, 0 round-trip divergences - and the decoder matches an independent reference with zero false acceptances. Every finding carries a dedicated regression test.
+- **Minimal Binary Footprint**: Core DLL is optimized at **~409 KB** and Launcher at **~397 KB** (strictly under the 600 KB limit) through `.bss` buffer paging and `-O ReleaseSmall -fstrip`.
 
 ---
 
