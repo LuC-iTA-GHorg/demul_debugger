@@ -10,6 +10,9 @@ Native, high-performance in-process guest debugger, disassembler, profiler, and 
 
 ---
 
+<img width="1280" height="694" alt="demul_debugger" src="https://github.com/user-attachments/assets/d6fb012a-5839-4442-98b2-ff215b2d13f5" />
+
+
 ## Supported Systems & Platforms
 
 - **Sega Dreamcast** (16 MB Main RAM)
