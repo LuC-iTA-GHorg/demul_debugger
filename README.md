@@ -1,54 +1,54 @@
 # Demul Guest Debugger (SH-4 / Dreamcast & Arcade)
 
-Native, high-performance in-process guest debugger, disassembler, profiler, and reverse engineering toolkit for the **Demul v0.7 (Build 251220)** emulator, written in **Zig** and Win32.
+A native, in-process SH-4 / SH-3 debugger, disassembler and reverse-engineering toolkit for the **Demul v0.7 (Build 251220)** emulator.
 
-> [!WARNING]
-> **Demul Version Compatibility**: This debugger was developed and verified **EXCLUSIVELY for Demul v0.7 (Build 251220 / `demul_251220`)**. Any other build or version of Demul is untested and may crash or fail to function due to static memory offset targets and hook addresses.
-
-> [!CAUTION]
-> **Antivirus / SmartScreen False Positives**: The compiled binaries in this repository are very likely to be flagged by Windows Defender, other antivirus engines, or VirusTotal as a trojan, "game hacking tool", or generic malware. **This is a false positive**, but an expected one — read [why this happens and what to do about it](#antivirus--smartscreen-false-positives) before reporting it as a bug or assuming the repository has been compromised.
-
----
+By **LuC-iTA @ Gamehacking.org**
 
 <img width="1280" height="694" alt="demul_debugger" src="https://github.com/user-attachments/assets/d6fb012a-5839-4442-98b2-ff215b2d13f5" />
 
+---
 
-## Supported Systems & Platforms
+## What it is
 
-- **Sega Dreamcast** (16 MB Main RAM)
-- **Sammy Atomiswave** (16 MB Main RAM)
-- **Sega NAOMI 1 & NAOMI 2** (32 MB Main RAM)
-- **Sega Hikaru** (32 MB Main RAM)
-- **Gaelco 3D** (8 MB Main RAM)
-- **Cave CV1000** (16 MB Main RAM)
-- **Capcom / Sega Medalusion** (16 MB Main RAM)
+The whole tool is a single file, **`padDemulDbg.dll`**. It is a complete Demul pad (controller) plugin that also hosts the debugger. Demul loads it through its own plugin loader, so there is no launcher and no injection.
+
+> [!IMPORTANT]
+> **Upgrading from an older release?** The former `demul_debugger.exe` launcher and `debugger_core.dll` are obsolete. Delete both from your Demul folder and install `padDemulDbg.dll` as described below.
 
 ---
 
-## Key Features
+## Requirements
 
-- **SH-4 Disassembler & Assembler**: Complete, fully symmetric Hitachi SH-4 encoding and decoding - every instruction the disassembler prints is accepted back by the assembler (zero unsupported encodings across the whole 65,536-opcode space), including `fmov.s` indirect forms, `fmac`, the GBR-relative byte logicals, banked registers and the vector FPU instructions. Verified opcode-by-opcode across the full 65,536-encoding space by round-trip and by differential comparison against an independent reference decoder (see `BUG_AUDIT_REPORT.md`), with branch visual arrows, target labels (`; loc_...`, `; sub_...`), literal pool preview (`; = 0x...`), Gutter markers, and in-place assembly.
-- **Branch Watcher & Flow Profiler (`Ctrl+W`)**: Real-time branch execution profiler supporting 8,192 unique branch sites and 16,384 hash slots. Displays preceding condition instruction (`PC - 2`), supports "Cond Only" filtering, idle noise calibration, event isolation, in-place condition inversion (`BT` $\leftrightarrow$ `BF`), force jump, NOP, and log export.
-- **Single-Cycle Bitwise Opcode Hook**: Matches conditional branches in 1 CPU cycle inside the interpreter step hook (`0x00511EB0`).
-- **Instruction Trace Logger (`Ctrl+T`)**: 2048-entry circular ring buffer recording PC, opcode, PR, R0, R15, and SR with zero heap allocations.
-- **In-Process Resilient RAM Writing**: Directly modifies guest code and variables via `VirtualProtect(PAGE_EXECUTE_READWRITE)`, preventing write failures in Win32 WOW64 environments.
-- **Hardware Memory Watchpoints (`DR0`..`DR3`)**: Zero-latency hardware watchpoints powered by x86 CPU debug registers and Vectored Exception Handling. Addresses are masked against the live RAM size (8 / 16 / 32 MB), and misaligned watchpoints are rejected up front because the debug registers would never fire for them.
-- **Memory Freeze / Value Locker**: Real-time thread-safe memory lock engine for 1B, 2B, 4B, and 32-bit Float values running on a 1ms monitor loop.
-- **RAM Search Engine (`Ctrl+S`)**: Multi-type memory scanner (Exact, Changed, Unchanged, Increased, Decreased, Between) with alignment filtering.
-- **Memory Viewer & Hex Editor (`Ctrl+M`)**: Dynamic full-viewport hex dump with instant jumps to RAM, VRAM, ARAM, and BIOS.
-- **Dedicated Stack Viewer (`Ctrl+K`)**: Real-time call stack and frame inspector relative to R15 with return address annotations.
-- **SH-4 Converter Scratchpad (`Ctrl+H`)**: Two-panel bidirectional ASM $\leftrightarrow$ HEX converter with automatic literal pool resolution.
-- **Direct Disc Extraction (`1ST_READ.BIN`)**: Traverses mounted GDI/CDI images and ISO9660 directory structures, with automatic 2MB tile Sega descrambling into `dumps/1ST_READ_DESCRAMBLED.BIN`.
-- **Dynamic UI Control Lock & Cold-Start Alignment**: Tracks Demul emulation lifecycle via `GetExitCodeThread`. Displays *"Emulation Inactive"* banners across all windows on cold start, clearing automatically via live timer invalidation on game start. Detects Dynarec vs. Interpreter (`0x0A4859C8`) on-the-fly across all platforms, locking execution hooks while keeping Memory Freeze active.
-- **Fully Relocatable Installation**: No absolute path is compiled into the binaries. Simply place `demul_debugger.exe` and `debugger_core.dll` in the same folder as `demul.exe` - any folder, any drive, including removable media. The launcher refuses to start if `demul.exe` is not adjacent, and still validates that it is exactly Demul v0.7 Build 251220 before injecting.
-- **Audited Correctness, Zero Known Defects**: The September 2026 source audit found and closed 17 defects. Across the full 65,536-opcode space the disassembler and assembler are exactly symmetric - 0 unsupported encodings, 0 round-trip divergences - and the decoder matches an independent reference with zero false acceptances. Every finding carries a dedicated regression test.
-- **Minimal Binary Footprint**: Core DLL is optimized at **~409 KB** and Launcher at **~397 KB** (strictly under the 600 KB limit) through `.bss` buffer paging and `-O ReleaseSmall -fstrip`.
+- **Windows**.
+- **Demul v0.7 Build 251220, exactly.** The plugin checks the host executable at start-up. On any other build it works only as a pad plugin and installs no debugger hooks.
+- **Interpreter mode** for the debugger: `cpumode = 0` in `Demul.ini`. The debugger does not work with the dynarec.
 
 ---
 
-## Shortcuts & Controls
+## Installation
 
-| Category | Shortcut / Button | Function |
+1. Download `padDemulDbg.dll` from the [Releases](https://github.com/LuC-iTA-GHorg/demul_debugger/releases) page.
+2. Copy it into Demul's `plugins\` folder.
+3. Select it as the pad plugin, either:
+   - in Demul: **Config → Plugins and Paths → Controls → "Demul Debugger Pad (padDemulDbg)"**, or
+   - in `Demul.ini`, section `[plugins]`: `pad = padDemulDbg.dll`
+4. Set `cpumode = 0` in `Demul.ini`.
+5. Configure your buttons as usual via **Config → Controls**. The plugin has its own configuration dialogs and uses the same `padDemul.ini` as the stock pad plugin, so your existing mappings carry over. The stock `padDemul.dll` is not needed (it can stay in the folder as an alternative).
+
+---
+
+## Usage
+
+Start Demul and launch a game as you normally would, from the menus or from the command line, for example:
+
+```pwsh
+.\demul.exe -run=cave3rd -rom=ibara
+.\demul.exe -run=alien -rom=gekimaka
+```
+
+Open the debugger windows from the **Debug Tools** menu or with the hotkeys below.
+
+| Category | Shortcut | Function |
 | :--- | :--- | :--- |
 | **Window Toggles** | **Ctrl + D** | Show / Hide Main Disassembler Window |
 | | **Ctrl + W** | Open Branch Watcher & Dynamic Flow Profiler |
@@ -57,10 +57,10 @@ Native, high-performance in-process guest debugger, disassembler, profiler, and 
 | | **Ctrl + S** | Open Real-Time Memory Scanner |
 | | **Ctrl + B** | Open Breakpoint, Watchpoint & Memory Freeze Manager |
 | | **Ctrl + T** | Open Instruction Trace Logger |
-| | **Ctrl + H** | Open SH-4 Converter Scratchpad (ASM $\leftrightarrow$ HEX) |
+| | **Ctrl + H** | Open SH-4 Converter Scratchpad (ASM ↔ HEX) |
 | **Execution Controls** | **Ctrl + G** | Jump Disassembler to Guest Address |
 | | **F2** | Toggle Execution Breakpoint on selected instruction / address |
-| | **F5** | Pause Emulation |
+| | **F5** | Pause / Resume Emulation (toggle) |
 | | **F9** | Resume Emulation |
 | | **F7** | Step Into (Single SH-4 Opcode) |
 | | **F8** | Step Over (Subroutine Call) |
@@ -71,34 +71,87 @@ Native, high-performance in-process guest debugger, disassembler, profiler, and 
 | | **Home / End** | Jump to newest / oldest entry in Trace Logger |
 | | **Enter / Esc** | Confirm input in address jump boxes & dialogs / Close dialogs |
 
+The window toggles work whenever a Demul window (main window, game window or any debugger window) has the keyboard focus. They are released while another application is in the foreground, so they never steal those key combinations from other programs. `Ctrl + G` and the function keys act on the disassembler window when it has the focus.
+
 ---
 
-## Antivirus / SmartScreen False Positives
+## Features
 
-If Windows Defender, another antivirus, or VirusTotal flags `demul_debugger.exe` or
-`debugger_core.dll` as a trojan, "hack tool", "riskware", or similar — **this is expected, and it is
-a false positive.** No malicious code has ever been present in this repository. This section
-explains exactly why the detection happens, what actually reduces it, and what does not.
+- **SH-4 disassembler and assembler**: fully symmetric over the entire opcode space, including FPU and vector instructions; branch arrows, target labels, literal-pool previews and in-place assembly.
+- **Breakpoints and stepping**: execution breakpoints, step into / over / out, pause and resume.
+- **Hardware watchpoints (DR0–DR3)**: on main RAM and on the BIOS, flash, VRAM and ARAM regions.
+- **Instruction trace logger**: ring buffer of recent PC, opcode and key registers.
+- **Branch watcher and flow profiler**: records every conditional branch that executes; invert BT/BF, force a jump or NOP a branch in place; export the log.
+- **Memory viewer and hex editor**: with tabs for the real BIOS, VRAM, ARAM, flash and ROM regions of the running system.
+- **Stack viewer**: frames relative to R15, annotated with return addresses.
+- **Memory searcher and freezer**: exact / changed / unchanged / increased / decreased / between scans; lock 1-, 2- and 4-byte and float values.
+- **Live patching**: edit guest code and data while the game runs.
+- **ASM ↔ HEX scratchpad** with literal-pool resolution.
+- **Disc extraction**: extracts and descrambles `1ST_READ.BIN` from mounted GDI / CDI images.
 
-### Why antivirus engines flag this project
+---
 
-Antivirus heuristics do not read intent, they read **behaviour**. And the behaviour this project
-needs in order to work is, byte for byte, the same behaviour a game trainer, a cheat engine, or a
-process injector uses:
+## Supported systems
 
-- `demul_debugger.exe` calls `VirtualAllocEx` + `WriteProcessMemory` + `CreateRemoteThread` on
-  `LoadLibraryA` to load `debugger_core.dll` into Demul's process. This exact API sequence is the
-  textbook signature of DLL injection, and it is what every injection-detection heuristic looks for.
-- `debugger_core.dll`, once loaded, installs inline hooks on Demul's interpreter dispatch loops via
-  `VirtualProtect(PAGE_EXECUTE_READWRITE)`, patches live instruction bytes in the guest's emulated
-  RAM, and registers a Vectored Exception Handler.
-- It also programs the x86 hardware debug registers (`DR0..DR3`) directly — the same mechanism used
-  by hardware breakpoints in a debugger and by anti-debug bypass tools alike.
+| System | Status |
+| :--- | :--- |
+| Sega Dreamcast | Verified |
+| Sega NAOMI 1 | Verified |
+| Sammy Atomiswave | Verified |
+| Cave CV1000 | Verified |
+| Capcom / Sega Medalusion | Verified |
+| Sega Hikaru | Untested |
+| Sega NAOMI 2 | Untested |
+| Gaelco SH-4 (ATV Track, Gaelco Football, Smashing Drive) | Untested |
 
-Every one of these is necessary for a native, zero-overhead, in-process SH-4 debugger to exist at
-all — there is no way to hook an interpreter loop, patch live game code, or set a hardware
-watchpoint without doing exactly these things. The heuristics are not wrong about what the code
-does; they simply cannot distinguish "debugger for a game emulator" from "cheat injector for a
-game" or "trojan targeting a game process", because from the outside those three tools are
-indistinguishable at the API-call level. **A 100% clean scan on every engine is not a realistic
-goal** for a tool built this way, on any codebase, in any language.
+Gaelco titles need Demul's `gpuDX11old.dll` GPU plugin, which in turn requires the [DirectX End-User Runtimes (June 2010)](https://www.microsoft.com/en-us/download/details.aspx?id=8109).
+
+---
+
+## Environment switches
+
+Set these before starting Demul:
+
+- `PADDEMULDBG_TRACE=1`: log one line for every press and release of each bound input.
+- `PADDEMULDBG_NO_DEBUGGER=1`: pad plugin only; no debugger hooks are installed.
+
+---
+
+## Output files
+
+- `debugger_log.txt`, next to `demul.exe`: plugin and debugger start-up log.
+- `dumps\`, in the Demul folder: extracted boot files and RAM dumps.
+
+---
+
+## Known limitations
+
+- The debugger works only with the SH-4 interpreter (`cpumode = 0`), not the dynarec.
+- An XInput pad may appear twice in the device list.
+- Rumble / force feedback is not supported yet.
+- Writes to the BIOS region are refused by design.
+
+---
+
+## Troubleshooting
+
+**Ctrl+D does nothing.** Check, in order:
+
+1. "Demul Debugger Pad (padDemulDbg)" is selected under Config → Plugins and Paths → Controls.
+2. You are running Demul v0.7 **Build 251220**. On any other build the debugger is not started.
+3. `cpumode = 0` is set in `Demul.ini`.
+4. `debugger_log.txt` next to `demul.exe` reports what happened during start-up.
+
+---
+
+## Antivirus / SmartScreen
+
+The current `padDemulDbg.dll` was not flagged in the author's check on 23 October 2026 (the old launcher-based release was). If an antivirus engine does flag it, that is a heuristic reacting to in-process hooking, which a native debugger cannot avoid; please report it to the vendor as a false positive.
+
+**Only download the DLL from this repository's Releases page. Never repackage, pack, compress or rename it**: that changes nothing about what it does and makes detections more likely.
+
+---
+
+## Disclaimer
+
+This project is not affiliated with or endorsed by the authors of Demul. Use it only with games and BIOS files you legally own.
