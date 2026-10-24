@@ -71,7 +71,7 @@ Open the debugger windows from the **Debug Tools** menu or with the hotkeys belo
 | | **Home / End** | Jump to newest / oldest entry in Trace Logger |
 | | **Enter / Esc** | Confirm input in address jump boxes & dialogs / Close dialogs |
 
-The window toggles work whenever a Demul window (main window, game window or any debugger window) has the keyboard focus. They are released while another application is in the foreground, so they never steal those key combinations from other programs. `Ctrl + G` and the function keys act on the disassembler window when it has the focus.
+The window toggles work whenever Demul is the active application (main window, game window or any debugger window). They are released as soon as you switch to another application, so other programs keep those key combinations. `Ctrl + G` and the function keys act on the disassembler window when it has the focus.
 
 ---
 
@@ -87,7 +87,7 @@ The window toggles work whenever a Demul window (main window, game window or any
 - **Memory searcher and freezer**: exact / changed / unchanged / increased / decreased / between scans; lock 1-, 2- and 4-byte and float values.
 - **Live patching**: edit guest code and data while the game runs.
 - **ASM ↔ HEX scratchpad** with literal-pool resolution.
-- **Disc extraction**: extracts and descrambles `1ST_READ.BIN` from mounted GDI / CDI images.
+- **Disc extraction**: extracts `1ST_READ.BIN` from mounted GDI / CDI images and descrambles it when needed.
 
 ---
 
@@ -97,12 +97,17 @@ The window toggles work whenever a Demul window (main window, game window or any
 | :--- | :--- |
 | Sega Dreamcast | Verified |
 | Sega NAOMI 1 | Verified |
+| Sega NAOMI GD-ROM | Verified |
+| Sega NAOMI 2 | Verified |
+| Sega NAOMI 2 GD-ROM | Verified |
+| Spider | Verified |
 | Sammy Atomiswave | Verified |
+| Sega Hikaru | Verified |
+| Gaelco SH-4 (ATV Track, Gaelco Football, Smashing Drive) | Verified |
 | Cave CV1000 | Verified |
 | Capcom / Sega Medalusion | Verified |
-| Sega Hikaru | Untested |
-| Sega NAOMI 2 | Untested |
-| Gaelco SH-4 (ATV Track, Gaelco Football, Smashing Drive) | Untested |
+
+"Verified" means the pad and all debugger functions were tested on that system with Demul Build 251220.
 
 Gaelco titles need Demul's `gpuDX11old.dll` GPU plugin, which in turn requires the [DirectX End-User Runtimes (June 2010)](https://www.microsoft.com/en-us/download/details.aspx?id=8109).
 
